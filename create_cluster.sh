@@ -2,8 +2,9 @@
 
 # 1. Installs PostgreSQL (distro standard version)
 # 2. Stops default cluster
-# 3. Creates cluster Frodo (/jail/frodo)
+# 3. Creates cluster Frodo (/frodo)
 # 4. Alters conf to allow access from everywhere
+# 5. Enables SSL
 # NOTE: the script does not start the server
 
 
@@ -26,17 +27,16 @@ fi
 
 sudo -u postgres /usr/lib/postgresql/$version/bin/pg_ctl stop -D /etc/postgresql/$version/main
 
-if [ -d "/jail" ]
+if [ -d "/frodo" ]
 then
-	echo "/jail already exists! Dying slowly..."
+	echo "/frodo already exists! Dying slowly..."
 	sudo -u postgres /usr/lib/postgresql/$version/bin/pg_ctl start -D /etc/postgresql/$version/main -l /var/log/postgresql/postgresql-$(echo $version)-main.log
 	exit 1
 fi
 
-sudo mkdir /jail
-sudo chown postgres:postgres /jail
-
-sudo -u postgres /usr/lib/postgresql/$version/bin/initdb -D /jail/frodo
+sudo mkdir /frodo
+sudo chown postgres:postgres /frodo
+sudo -u postgres /usr/lib/postgresql/$version/bin/initdb -D /frodo
 
 if [ ! -e "pg_hba.conf" ]
 then
@@ -54,7 +54,17 @@ fi
 
 sudo chown postgres:postgres pg_hba.conf
 sudo chown postgres:postgres postgresql.conf
-sudo -u postgres cp -f pg_hba.conf /jail/frodo
-sudo -u postgres cp -f postgresql.conf /jail/frodo
+sudo -u postgres cp -f pg_hba.conf /frodo
+sudo -u postgres cp -f postgresql.conf /frodo
+
+echo "Setting up SSL..."
+sudo apt-get install -y openssl
+sudo openssl req -newkey rsa:2048 -nodes -keyout /frodo/server.key -x509 -days 730 -out /frodo/server.crt -subj "/"
+sudo chown postgres:postgres /frodo/server.key
+sudo chown postgres:postgres /frodo/server.crt
+sudo chmod 0600 /frodo/server.key
+
+echo "Done."
+
 
 
