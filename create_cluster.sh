@@ -14,7 +14,7 @@ function cleanup(){
 }
 
 sudo apt-get update
-sudo apt-get install postgresql
+sudo apt-get install -y postgresql
 
 version=$(ls /usr/lib/postgresql)
 line_count=$(echo $version | wc -l)
