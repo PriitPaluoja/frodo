@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Stops frodo cluster.
-
-sudo -u postgres /usr/lib/postgresql/9.5/bin/pg_ctl -D /frodo stop
+version=$(ls /usr/lib/postgresql)
+sudo -u postgres /usr/lib/postgresql/$version/bin/pg_ctl -D /frodo stop
 
 echo "Done."
